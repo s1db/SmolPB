@@ -105,3 +105,24 @@ catch_discover_tests(
   "relaxed_constexpr."
   OUTPUT_SUFFIX
   .xml)
+
+add_executable(constraint_tests constraint_tests.cpp)
+target_link_libraries(
+  constraint_tests
+  PRIVATE SmolPB::SmolPB_warnings
+          SmolPB::SmolPB_options
+          SmolPB::evaluate
+          Catch2::Catch2WithMain)
+
+catch_discover_tests(
+  constraint_tests
+  TEST_PREFIX
+  "constraint_tests."
+  REPORTER
+  XML
+  OUTPUT_DIR
+  .
+  OUTPUT_PREFIX
+  "constraint_tests."
+  OUTPUT_SUFFIX
+  .xml)
