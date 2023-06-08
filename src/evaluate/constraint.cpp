@@ -110,3 +110,46 @@ std::unordered_set<int> Constraint::Propagate(std::unordered_set<int> &assignmen
   }
   return result;
 }
+
+Constraint Constraint::operator+(const Constraint &other)
+{
+  std::unordered_map<int, int> new_literal_coefficient_map = std::unordered_map<int, int>();
+  for (auto &kv : this->literal_coefficient_map) { new_literal_coefficient_map[kv.first] = kv.second; }
+  for (auto &kv : other.literal_coefficient_map) {
+    if (new_literal_coefficient_map.find(kv.first) != new_literal_coefficient_map.end()) {
+      new_literal_coefficient_map[kv.first] += kv.second;
+    } else {
+      new_literal_coefficient_map[kv.first] = kv.second;
+    }
+  }
+  int new_degree = this->degree + other.degree;
+  return Constraint(new_literal_coefficient_map, new_degree);
+}
+Constraint Constraint::operator-(const Constraint &other)
+{
+  std::unordered_map<int, int> new_literal_coefficient_map = std::unordered_map<int, int>();
+  for (auto &kv : this->literal_coefficient_map) { new_literal_coefficient_map[kv.first] = kv.second; }
+  for (auto &kv : other.literal_coefficient_map) {
+    if (new_literal_coefficient_map.find(kv.first) != new_literal_coefficient_map.end()) {
+      new_literal_coefficient_map[kv.first] -= kv.second;
+    } else {
+      new_literal_coefficient_map[kv.first] = -1 * kv.second;
+    }
+  }
+  int new_degree = this->degree - other.degree;
+  return Constraint(new_literal_coefficient_map, new_degree);
+}
+Constraint Constraint::operator*(const int &other)
+{
+  std::unordered_map<int, int> new_literal_coefficient_map = std::unordered_map<int, int>();
+  for (auto &kv : this->literal_coefficient_map) { new_literal_coefficient_map[kv.first] = kv.second * other; }
+  int new_degree = this->degree * other;
+  return Constraint(new_literal_coefficient_map, new_degree);
+}
+Constraint Constraint::operator/(const int &other)
+{
+  std::unordered_map<int, int> new_literal_coefficient_map = std::unordered_map<int, int>();
+  for (auto &kv : this->literal_coefficient_map) { new_literal_coefficient_map[kv.first] = kv.second / other; }
+  int new_degree = this->degree / other;
+  return Constraint(new_literal_coefficient_map, new_degree);
+}
