@@ -29,6 +29,10 @@ public:
     std::unordered_set<int> GetLiteralIds();
     std::unordered_set<int> GetCoefficients();
     int GetDegree();
+    Constraint operator+(const Constraint &other);
+    Constraint operator-(const Constraint &other);
+    Constraint operator*(const int &other);
+    Constraint operator/(const int &other);
 };
 
 #endif // CONSTRAINT_H_

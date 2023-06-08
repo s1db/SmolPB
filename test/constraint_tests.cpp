@@ -130,4 +130,23 @@ TEST_CASE("ConstraintTest") {
         std::unordered_set<int> expected = {};
         REQUIRE(c.Propagate(assignment) == expected);
     }
+    SECTION("ConstraintAdditionSubtraction") {
+        std::vector<int> literals = {1, 2, 3};
+        std::vector<int> coefficients = {4, 5, 6};
+        int degree = 15;
+        Constraint c1(literals, coefficients, degree);
+        Constraint c2(literals, coefficients, degree);
+        Constraint c3 = c1 + c2;
+        Constraint c4 = c3 - c2;
+        REQUIRE(c1.LiteralNormalizedForm() == c4.LiteralNormalizedForm());
+    }
+    SECTION("ConstraintMultiplicationDivision"){
+        std::vector<int> literals = {1, 2, 3};
+        std::vector<int> coefficients = {4, 5, 6};
+        int degree = 15;
+        Constraint c1(literals, coefficients, degree);
+        Constraint c2 = c1 * 2;
+        Constraint c3 = c2 / 2;
+        REQUIRE(c1.LiteralNormalizedForm() == c3.LiteralNormalizedForm());
+    }
 }
