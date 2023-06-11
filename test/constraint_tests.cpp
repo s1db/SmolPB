@@ -1,9 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <algorithm>
-#include <SmolPB/sample_library.hpp>
 #include <SmolPB/evaluate/constraint.hpp>
 
-TEST_CASE("ConstraintTest") {
+TEST_CASE("ConstraintPrintingTest") {
     SECTION("CNF") {
         std::vector<int> literals = {1, 2, 3};
         std::vector<int> coefficients = {-4, -5, -6};
@@ -25,7 +24,8 @@ TEST_CASE("ConstraintTest") {
         std::sort(normalizedForm.begin(), normalizedForm.end());
         REQUIRE(expected == normalizedForm);
     }
-
+}
+TEST_CASE("ConstraintSlackEvaluationTest") {
     SECTION("Slack_Empty_Assignment"){
         std::unordered_set<int> assignment = {};
         Constraint c1({1, 2, 3}, {1, 2, 3}, 5);
@@ -55,7 +55,9 @@ TEST_CASE("ConstraintTest") {
         Constraint c1({1, 2, 3}, {1, 2, 3}, 5);
         REQUIRE(c1.Slack(assignment) == 2-5);
     }
+}
 
+TEST_CASE("ConstraintPropagationEvaluationTest") {
     SECTION("Negate"){
         std::vector<int> literals = {1, 2, 3};
         std::vector<int> coefficients = {4, 5, 6};
@@ -130,6 +132,9 @@ TEST_CASE("ConstraintTest") {
         std::unordered_set<int> expected = {};
         REQUIRE(c.Propagate(assignment) == expected);
     }
+}
+
+TEST_CASE("ConstraintOperationsTest") {
     SECTION("ConstraintAdditionSubtraction") {
         std::vector<int> literals = {1, 2, 3};
         std::vector<int> coefficients = {4, 5, 6};

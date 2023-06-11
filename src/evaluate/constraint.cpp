@@ -1,5 +1,4 @@
 #include <SmolPB/evaluate/constraint.hpp>
-#include <iostream>
 
 Constraint::Constraint(const std::vector<int> &literals, const std::vector<int> &coefficients, int parsed_degree)
 {
@@ -152,4 +151,14 @@ Constraint Constraint::operator/(const int &other)
   for (auto &kv : this->literal_coefficient_map) { new_literal_coefficient_map[kv.first] = kv.second / other; }
   int new_degree = this->degree / other;
   return Constraint(new_literal_coefficient_map, new_degree);
+}
+
+std::unordered_map<int, int> Constraint::GetCoefficients(){
+    return this->literal_coefficient_map;
+}
+int Constraint::GetDegree(){
+    return this->degree;
+}
+bool Constraint::operator==(const Constraint &other) {
+    return this->literal_coefficient_map == other.literal_coefficient_map && this->degree == other.degree;
 }

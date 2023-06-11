@@ -16,6 +16,9 @@ private:
     // Maps literal id to coefficient
     std::unordered_map<int, int> literal_coefficient_map;
     int degree;
+    int time_of_deletion = 0;
+    std::vector<int> antecedents = {};
+    char type;
 
 public:
     Constraint(const std::vector<int> &literals, const std::vector<int> &coefficients, int degree);
@@ -27,12 +30,17 @@ public:
     bool IsUnsatisfied(std::unordered_set<int> &assignment);
     std::unordered_set<int> Propagate(std::unordered_set<int> &assignment);
     std::unordered_set<int> GetLiteralIds();
-    std::unordered_set<int> GetCoefficients();
+    std::unordered_map<int, int> GetCoefficients();
     int GetDegree();
+    void SetTimeOfDeletion(int time);
+    void AddAntecedent(int antecedent);
+    void SetAntecedents(std::vector<int> antecedents);
+    void SetType(char type);
     Constraint operator+(const Constraint &other);
     Constraint operator-(const Constraint &other);
     Constraint operator*(const int &other);
     Constraint operator/(const int &other);
+    bool operator==(const Constraint &other);
 };
 
 #endif // CONSTRAINT_H_
