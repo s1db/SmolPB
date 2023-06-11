@@ -1,7 +1,7 @@
 include(GenerateExportHeader)
 
 
-add_library(evaluate constraint.cpp)
+add_library(evaluate constraint.cpp model_evaluator.cpp)
 
 
 
