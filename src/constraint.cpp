@@ -1,4 +1,4 @@
-#include <SmolPB/evaluate/constraint.hpp>
+#include "constraint.hpp"
 
 Constraint::Constraint(const std::vector<int> &literals, const std::vector<int> &coefficients, int parsed_degree)
 {
@@ -33,12 +33,12 @@ Constraint::Constraint(const std::unordered_map<int, int> &parsed_literal_coeffi
   }
 }
 
-void Constraint::Negate()
+void Constraint::negate()
 {
   for (auto &kv : literal_coefficient_map) { kv.second *= -1; }
   degree = -1 * degree + 1;
 }
-std::string Constraint::LiteralNormalizedForm()
+std::string Constraint::literal_normalized_form()
 {
   std::string result = "";
   for (auto &kv : literal_coefficient_map) {
@@ -48,7 +48,7 @@ std::string Constraint::LiteralNormalizedForm()
   return result;
 }
 
-std::string Constraint::CoefficientNormalizedForm()
+std::string Constraint::coefficient_normalized_form()
 {
   std::string result = "";
   int new_degree = this->degree;
@@ -63,7 +63,7 @@ std::string Constraint::CoefficientNormalizedForm()
   result += " >= " + std::to_string(new_degree) + " ;";
   return result;
 }
-int Constraint::Slack(std::unordered_set<int> &assignment)
+int Constraint::slack(std::unordered_set<int> &assignment)
 {
   int slack = -1 * this->degree;
   for (auto &kv : literal_coefficient_map) {
@@ -72,7 +72,7 @@ int Constraint::Slack(std::unordered_set<int> &assignment)
     if (coefficient < 0) {
       literal *= -1;
       coefficient *= -1;
-      degree -= coefficient;
+      degree += coefficient;
     }
     // If the literal is in the assignment, then the slack is increased by the coefficient
     if (assignment.find(literal) != assignment.end()) {
@@ -83,14 +83,16 @@ int Constraint::Slack(std::unordered_set<int> &assignment)
       slack += coefficient;
     }
   }
+  // throw std::runtime_error("debug");
   return slack;
 }
 
-bool Constraint::IsUnsatisfied(std::unordered_set<int> &assignment) { return Slack(assignment) < 0; }
+bool Constraint::is_unsatisfied(std::unordered_set<int> &assignment) { return slack(assignment) < 0; }
 
-std::unordered_set<int> Constraint::Propagate(std::unordered_set<int> &assignment)
+std::unordered_set<int> Constraint::propagate(std::unordered_set<int> &assignment)
 {
-  int slack = Slack(assignment);
+  int slack = this->slack(assignment);
+  // printf("slack: %d\n", slack);
   if (slack < 0) { return std::unordered_set<int>(); }
 
   std::unordered_set<int> result;
@@ -104,9 +106,14 @@ std::unordered_set<int> Constraint::Propagate(std::unordered_set<int> &assignmen
     }
     if (slack < coefficient && assignment.find(literal) == assignment.end()
         && assignment.find(-1 * literal) == assignment.end()) {
+      // printf("propagating %d\n", literal);
       result.insert(literal);
     }
   }
+  // printf("result size: %lu\n", result.size());
+  // printf("result: ");
+  // for (auto &literal : result) { printf("%d ", literal); }
+  // printf("\n");
   return result;
 }
 
@@ -153,12 +160,31 @@ Constraint Constraint::operator/(const int &other)
   return Constraint(new_literal_coefficient_map, new_degree);
 }
 
-std::unordered_map<int, int> Constraint::GetCoefficients(){
-    return this->literal_coefficient_map;
+std::unordered_map<int, int> Constraint::get_coefficients() { return this->literal_coefficient_map; }
+int Constraint::get_degree() { return this->degree; }
+bool Constraint::operator==(const Constraint &other)
+{
+  return this->literal_coefficient_map == other.literal_coefficient_map && this->degree == other.degree;
 }
-int Constraint::GetDegree(){
-    return this->degree;
+bool Constraint::is_undefined() { return this->degree == 0 && this->literal_coefficient_map.size() == 0; }
+
+void Constraint::set_type(char type) { this->type = type; }
+
+void Constraint::add_antecedents(int antecedent) { this->antecedents.push_back(antecedent); }
+
+Constraint::Constraint()
+{
+  this->degree = 0;
+  this->literal_coefficient_map = std::unordered_map<int, int>();
 }
-bool Constraint::operator==(const Constraint &other) {
-    return this->literal_coefficient_map == other.literal_coefficient_map && this->degree == other.degree;
+
+void Constraint::remove_zero_coefficient_literals()
+{
+  for (auto it = this->literal_coefficient_map.begin(); it != this->literal_coefficient_map.end();) {
+    if (it->second == 0) {
+      it = this->literal_coefficient_map.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
