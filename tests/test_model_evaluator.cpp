@@ -7,7 +7,7 @@ TEST_CASE("Model Line Parsing"){
         ModelEvaluator m("test/models/model1.txt", "test/models/model1.proof");
         std::string line = "1 x1 1 x2 1 x3 >= 1 ;";
         m.add_model_line(line);
-        Constraint c = m.getConstraint(1);
+        Constraint c = m.get_constraint(1);
         CAPTURE(c.literal_normalized_form());
         CAPTURE(c.coefficient_normalized_form());
         CAPTURE(c.get_degree());
@@ -25,7 +25,7 @@ TEST_CASE("Model Line Parsing"){
         ModelEvaluator m("test/models/model1.txt", "test/models/model1.proof");
         std::string line = "1 x1 1 ~x2 1 x3 >= 1 ;";
         m.add_model_line(line);
-        Constraint c = m.getConstraint(1);
+        Constraint c = m.get_constraint(1);
         CAPTURE(c.literal_normalized_form());
         CAPTURE(c.coefficient_normalized_form());
         CAPTURE(c.get_degree());

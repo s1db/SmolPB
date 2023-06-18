@@ -26,9 +26,9 @@ public:
     void negate();
     std::string literal_normalized_form();
     std::string coefficient_normalized_form();
-    int slack(std::unordered_set<int> &assignment);
+    int slack(std::unordered_set<int> assignment);
     bool is_unsatisfied(std::unordered_set<int> &assignment);
-    std::unordered_set<int> propagate(std::unordered_set<int> &assignment);
+    std::unordered_set<int> propagate(std::unordered_set<int> assignment);
     std::unordered_set<int> get_literal_ids();
     std::unordered_map<int, int> get_coefficients();
     int get_degree();
