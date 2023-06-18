@@ -2,12 +2,16 @@ cmake_minimum_required(VERSION 3.12)
 project(SmolPB)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_BUILD_TYPE Debug)
 
 # Enable compiler warnings
 add_compile_options(-Wall -Wextra -pedantic)
 
 # Enable strict compile flags (treat warnings as errors)
 add_compile_options(-Werror)
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -g")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -Wextra -g")
 
 # Add the source files to the project
 set(SOURCES

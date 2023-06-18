@@ -22,7 +22,6 @@ Constraint::Constraint(const std::unordered_map<int, int> &parsed_literal_coeffi
 {
   this->degree = parsed_degree;
   this->literal_coefficient_map = std::unordered_map<int, int>();
-  // loop through the map and add to the literal_coefficient_map
   for (auto &kv : parsed_literal_coefficient_map) {
     if (kv.first > 0) {
       this->literal_coefficient_map[kv.first] = kv.second;
@@ -35,8 +34,8 @@ Constraint::Constraint(const std::unordered_map<int, int> &parsed_literal_coeffi
 
 void Constraint::negate()
 {
-  for (auto &kv : literal_coefficient_map) { kv.second *= -1; }
-  degree = -1 * degree + 1;
+  for (auto &kv : this->literal_coefficient_map) { kv.second *= -1; }
+  this->degree = (-1 * this->degree) + 1;
 }
 std::string Constraint::literal_normalized_form()
 {
@@ -52,6 +51,7 @@ std::string Constraint::coefficient_normalized_form()
 {
   std::string result = "";
   int new_degree = this->degree;
+  // printf("degree: %d\n", this->degree);
   for (auto &kv : literal_coefficient_map) {
     if (kv.second < 0) {
       result += " " + std::to_string(-1 * kv.second) + " ~x" + std::to_string(kv.first);
@@ -63,57 +63,50 @@ std::string Constraint::coefficient_normalized_form()
   result += " >= " + std::to_string(new_degree) + " ;";
   return result;
 }
-int Constraint::slack(std::unordered_set<int> &assignment)
+int Constraint::slack(std::unordered_set<int> assignment)
 {
-  int slack = -1 * this->degree;
-  for (auto &kv : literal_coefficient_map) {
+  int slack = -1 * this->degree; // -A
+  printf("constraint: %s", this->literal_normalized_form().c_str());
+  for (const auto &kv : this->literal_coefficient_map) {
+    printf("literal: %d\n", kv.first);
+    printf("coefficient: %d\n", kv.second);
     int literal = kv.first;
     int coefficient = kv.second;
     if (coefficient < 0) {
-      literal *= -1;
       coefficient *= -1;
-      degree += coefficient;
+      literal *= -1; // flips the literal conversion to CNF
+      slack -= coefficient; // subtracts to the -A while converting to CNF
     }
-    // If the literal is in the assignment, then the slack is increased by the coefficient
-    if (assignment.find(literal) != assignment.end()) {
-      slack += coefficient;
-    }
-    // If the negation of the literal isn't in the assignment, then the slack is increased by the coefficient
-    else if (assignment.find(-1 * literal) == assignment.end()) {
-      slack += coefficient;
-    }
+    // if literal is unsatisfied by the assignment, then do nothing
+    if (assignment.find(-literal) != assignment.end()) { continue; }
+    slack += coefficient;
   }
-  // throw std::runtime_error("debug");
+  printf("this ran\n");
   return slack;
 }
 
 bool Constraint::is_unsatisfied(std::unordered_set<int> &assignment) { return slack(assignment) < 0; }
 
-std::unordered_set<int> Constraint::propagate(std::unordered_set<int> &assignment)
+std::unordered_set<int> Constraint::propagate(std::unordered_set<int> assignment)
 {
-  int slack = this->slack(assignment);
+  int new_slack = this->slack(assignment);
   // printf("slack: %d\n", slack);
-  if (slack < 0) { return std::unordered_set<int>(); }
+  printf("😋 this also ran\n");
+  if (new_slack < 0) { return std::unordered_set<int>(); }
 
   std::unordered_set<int> result;
   for (auto &kv : literal_coefficient_map) {
     int literal = kv.first;
     int coefficient = kv.second;
     if (coefficient < 0) {
-      literal *= -1;
       coefficient *= -1;
-      degree -= coefficient;
+      literal *= -1;// flips the literal conversion to CNF
     }
-    if (slack < coefficient && assignment.find(literal) == assignment.end()
+    if (new_slack < coefficient && assignment.find(literal) == assignment.end()
         && assignment.find(-1 * literal) == assignment.end()) {
-      // printf("propagating %d\n", literal);
       result.insert(literal);
     }
   }
-  // printf("result size: %lu\n", result.size());
-  // printf("result: ");
-  // for (auto &literal : result) { printf("%d ", literal); }
-  // printf("\n");
   return result;
 }
 
