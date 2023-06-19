@@ -40,7 +40,7 @@ void Constraint::negate()
 std::string Constraint::literal_normalized_form()
 {
   std::string result = "";
-  for (auto &kv : literal_coefficient_map) {
+  for (const auto &kv : literal_coefficient_map) {
     result += " " + std::to_string(kv.second) + " x" + std::to_string(kv.first);
   }
   result += " >= " + std::to_string(degree) + " ;";
