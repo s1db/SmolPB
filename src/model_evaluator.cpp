@@ -82,7 +82,10 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
       } else if (line[0] == 'f') {
         continue;
       }
-      printf("number of constraints: %d\n", static_cast<int>(this->constraint_db.size()));
+      printf("🥰🥰🥰 number of constraints: %d\n", static_cast<int>(this->constraint_db.size()));
+      //   for(Constraint constraint : this->constraint_db) {
+      //     printf("constraint: %s\n", constraint.coefficient_normalized_form().c_str());
+      //   }
     }
     proof_file.close();
   } else {
@@ -251,56 +254,35 @@ void ModelEvaluator::parse_j_step(const std::string &line)
 void ModelEvaluator::parse_rup_step(const std::string &line)
 {
   std::vector<std::string> line_tokens = tokenizer(line);
-  printf("line tokens: ");
-  for (std::string token : line_tokens) { printf(",%s ", token.c_str()); }
-  printf("\n");
   Constraint c = this->parse_constraint_step(line_tokens);
-  printf("constraint CNF: %s\n", c.coefficient_normalized_form().c_str());
-  printf("constraint LNF: %s\n", c.literal_normalized_form().c_str());
   std::vector<int> antecedents = {};
   c.set_type('u');
   c.negate();
-  printf("negated constraint CNF: %s\n", c.coefficient_normalized_form().c_str());
-  printf("negated constraint LNF: %s\n", c.literal_normalized_form().c_str());
   this->constraint_db.push_back(c);
-  std::unordered_set<int> t= {};
+  std::unordered_set<int> t = {};
   std::unordered_set<int> tau = c.propagate(t);
-
   while (true) {
-    printf("tau: ");
-    for (int t : tau) { printf("%d ", t); }
-    printf("\n");
-    for (auto it = this->constraint_db.begin(); it != this->constraint_db.end(); it++) {
-      printf("checking if constraint %d is unsatisfied\n", (int) std::distance(this->constraint_db.begin(), it)+1);
+    int id = 0;
+    for (auto it = this->constraint_db.begin(); it != this->constraint_db.end(); ++it) {
       Constraint &constraint = *it;
+      id++;
       if (constraint.is_unsatisfied(tau)) {
-        // printf("constraint %d is unsatisfied\n", (int) std::distance(this->constraint_db.begin(), it)+1);
-        // printf("constraint CNF: %s\n", constraint.literal_normalized_form().c_str());
-        printf("by assignment: ");
-        for (int t : tau) { printf("%d ", t); }
-        printf("\n");
-        int id = std::distance(this->constraint_db.begin(), it);
         antecedents.push_back(id);
         this->constraint_db.pop_back();
         c.negate();
-        printf("antecedents: ");
-        for (int antecedent : antecedents) {
-          printf("%d ", antecedent+1);
-          c.add_antecedents(antecedent + 1);
-        }
-        printf("\n");
+        c.add_antecedents(antecedents);
         this->constraint_db.push_back(c);
-        // printf("number of constraints: %d\n", static_cast<int>(this->constraint_db.size()));
-        // printf("added constraint: %s\n", c.literal_normalized_form().c_str());
         return;
       }
     }
     bool has_propagated = false;
-    for (auto it = this->constraint_db.end(); it != this->constraint_db.begin(); it--) {
+    // probably a better was of doing this...
+    id = 0;
+    for (auto it = this->constraint_db.rbegin(); it != this->constraint_db.rend(); ++it) {
       Constraint &constraint = *it;
       std::unordered_set<int> propagated = constraint.propagate(tau);
+      id++;
       if (propagated.size() > 0) {
-        int id = std::distance(this->constraint_db.begin(), it);
         antecedents.push_back(id);
         tau.insert(propagated.begin(), propagated.end());
         has_propagated = true;
