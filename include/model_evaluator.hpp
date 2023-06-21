@@ -4,7 +4,6 @@
 #include <map>
 
 #include "constraint.hpp"
-using namespace std;
 
 class ModelEvaluator
 {
@@ -17,11 +16,11 @@ private:
     int resolve_literal_id(std::string literal);
     int get_literal_id(std::string literal);
     Constraint parse_constraint_step(const std::string& line);
-    Constraint parse_constraint_step(std::vector<string> line);
+    Constraint parse_constraint_step(std::vector<std::string> line);
     void parse_rup_step(const std::string& line);
     void parse_pol_step(const std::string& line);
     void parse_j_step(const std::string& line);
-    void write_antecedents_to_file();
+    void write_antecedents_to_file(std::string& file_path);
 
 public:
     ModelEvaluator(std::string model_file_path, std::string proof_file_path);

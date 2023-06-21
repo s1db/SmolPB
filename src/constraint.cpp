@@ -164,7 +164,9 @@ bool Constraint::is_undefined() { return this->degree == 0 && this->literal_coef
 void Constraint::set_type(char type) { this->type = type; }
 
 void Constraint::add_antecedents(int antecedent) { this->antecedents.push_back(antecedent); }
-
+void Constraint::add_antecedents(std::vector<int> antecedents){
+  this->antecedents.insert(this->antecedents.end(), antecedents.begin(), antecedents.end());
+}
 Constraint::Constraint()
 {
   this->degree = 0;
