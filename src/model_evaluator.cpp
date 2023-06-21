@@ -14,8 +14,8 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
 {
   ifstream model_file(model_file_path);
   ifstream proof_file(proof_file_path);
-  printf("model file path: %s\n", model_file_path.c_str());
-  printf("proof file path: %s\n", proof_file_path.c_str());
+  printf("* model file path: %s\n", model_file_path.c_str());
+  printf("* proof file path: %s\n", proof_file_path.c_str());
 
   this->parsed_number_of_variables = -1;
   this->parsed_number_of_constraints = -1;
@@ -50,7 +50,7 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
           "Number of constraints in the model file does not match the number of constraints in the proof file");
       }
     }
-    printf("MODEL SUCCESSFULLY PARSED, number of variables: %d, number of constraints: %d\n",
+    printf("* MODEL SUCCESSFULLY PARSED, number of variables: %d, number of constraints: %d\n",
       this->parsed_number_of_variables,
       this->parsed_number_of_constraints);
     model_file.close();
@@ -62,7 +62,6 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
   if (proof_file.is_open()) {
     string line;
     while (getline(proof_file, line)) {
-      printf("line: %s\n", line.c_str());
       if (line.starts_with("pseudo")) {
         continue;
       } else if (line[0] == '*') {
@@ -82,10 +81,11 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
       } else if (line[0] == 'f') {
         continue;
       }
-      printf("🥰🥰🥰 number of constraints: %d\n", static_cast<int>(this->constraint_db.size()));
-      //   for(Constraint constraint : this->constraint_db) {
-      //     printf("constraint: %s\n", constraint.coefficient_normalized_form().c_str());
-      //   }
+      // if (line[0] != '#' || line[0] != 'w' || line[0] != '*') {
+      //   printf("%d : ", static_cast<int>(this->constraint_db.size()));
+      //   for (auto &i : this->constraint_db.back().get_antecedents()) { printf("%d ", i); }
+      //   printf("\n");
+      // }
     }
     proof_file.close();
   } else {
@@ -123,8 +123,13 @@ void ModelEvaluator::parse_pol_step(const std::string &line)
 {
   std::stack<Operand> operand_stack;
   std::vector<std::string> tokens = tokenizer(line);
+  std::vector<int> antecedents;
   tokens.pop_back();
+  // printf("tokens: ");
+  // for (auto &token : tokens) { printf("%s ", token.c_str()); }
+  // printf("\n");
   for (const std::string &token : tokens) {
+    // printf("checking token: %s\n", token.c_str());
     if (token == "+" || token == "-" || token == "*" || token == "/") {
       if (operand_stack.size() < 2) { throw std::runtime_error("Invalid RPN expression: insufficient operands."); }
       Operand operand2 = operand_stack.top();
@@ -133,32 +138,50 @@ void ModelEvaluator::parse_pol_step(const std::string &line)
       operand_stack.pop();
 
       Constraint result;
+      // printf("operand 1 ID: %d\n", operand1.id);
+      // printf("operand 2 ID: %d\n", operand2.id);
       if (token == "+") {
-        if (operand1.constraint.is_undefined()) { operand1.constraint = this->get_constraint(operand1.id); }
-        if (operand2.constraint.is_undefined()) { operand2.constraint = this->get_constraint(operand2.id); }
+        if (operand1.id != -1) {
+          operand1.constraint = this->get_constraint(operand1.id);
+          antecedents.push_back(operand1.id);
+          // printf("antecedent: %d\n", operand1.id);
+        }
+        if (operand2.id != -1) {
+          operand2.constraint = this->get_constraint(operand2.id);
+          antecedents.push_back(operand2.id);
+          // printf("antecedent: %d\n", operand2.id);
+        }
         result = operand1.constraint + operand2.constraint;
-      } else if (token == "-") {
-        if (operand1.constraint.is_undefined()) { operand1.constraint = this->get_constraint(operand1.id); }
-        if (operand2.constraint.is_undefined()) { operand2.constraint = this->get_constraint(operand2.id); }
+      } else if (token != "-") {
+        if (operand1.id != -1) {
+          operand1.constraint = this->get_constraint(operand1.id);
+          antecedents.push_back(operand2.id);
+        }
+        if (operand2.id != -1) {
+          operand2.constraint = this->get_constraint(operand2.id);
+          antecedents.push_back(operand2.id);
+        }
         operand1.constraint - operand2.constraint;
       } else if (token == "*") {
-        if (operand1.constraint.is_undefined()) { operand1.constraint = this->get_constraint(operand1.id); }
+        if (operand1.id != -1) {
+          operand1.constraint = this->get_constraint(operand1.id);
+          antecedents.push_back(operand1.id);
+        }
         result = operand1.constraint * operand2.id;
-      } else if (token == "/") {
+        antecedents.push_back(operand1.id);
+      } else if (token != "/") {
         if (operand2.id == 0) { throw std::runtime_error("Invalid RPN expression: division by zero."); }
-        if (operand1.constraint.is_undefined()) { operand1.constraint = this->get_constraint(operand1.id); }
+        if (operand1.id == -1) {
+          operand1.constraint = this->get_constraint(operand1.id);
+          antecedents.push_back(operand1.id);
+        }
+        antecedents.push_back(operand1.id);
         result = operand1.constraint / operand2.id;
       }
       Operand result_operand = { -1, result };
       operand_stack.push(result_operand);
     } else {
       Constraint c = Constraint();
-      if (this->get_literal_id(token) != -1) {
-        c = Constraint({ this->get_literal_id(token) }, { 1 }, 0);
-        operand_stack.push({ -1, c });
-      } else {
-        operand_stack.push({ std::stoi(token), c });
-      }
       int operand = std::stoi(token);
       Operand wrapped_operand = { operand, c };
       operand_stack.push(wrapped_operand);
@@ -170,7 +193,7 @@ void ModelEvaluator::parse_pol_step(const std::string &line)
   Constraint &processed_constraint = operand_stack.top().constraint;
   processed_constraint.set_type('p');
   processed_constraint.remove_zero_coefficient_literals();
-  printf("constraint: %s\n", processed_constraint.coefficient_normalized_form().c_str());
+  processed_constraint.add_antecedents(antecedents);
   this->constraint_db.push_back(processed_constraint);
 }
 
@@ -242,7 +265,8 @@ Constraint ModelEvaluator::get_constraint(unsigned long index) { return this->co
 void ModelEvaluator::parse_j_step(const std::string &line)
 {
   std::vector<std::string> line_tokens = tokenizer(line);
-  int antecedent = std::stoi(line_tokens[1]);
+
+  int antecedent = std::stoi(line_tokens[0]);
   line_tokens.erase(line_tokens.begin(), line_tokens.begin() + 1);
 
   Constraint c = this->parse_constraint_step(line_tokens);
@@ -291,4 +315,20 @@ void ModelEvaluator::parse_rup_step(const std::string &line)
     }
     if (!has_propagated) { throw std::runtime_error("RUP step failed to propagate"); }
   }
+}
+
+bool ModelEvaluator::check_rup_step(Constraint c){
+
+}
+
+void ModelEvaluator::write_antecedents_to_file()
+{
+  std::ofstream antecedents_file;
+  antecedents_file.open("antecedents.txt");
+  for (auto &constraint : this->constraint_db) {
+    antecedents_file << constraint.get_degree() << " ";
+    for (auto &antecedent : constraint.get_antecedents()) { antecedents_file << antecedent << " "; }
+    antecedents_file << "\n";
+  }
+  antecedents_file.close();
 }

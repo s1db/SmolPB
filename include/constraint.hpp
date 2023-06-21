@@ -43,6 +43,7 @@ public:
     bool operator==(const Constraint &other);
     bool is_undefined();
     void remove_zero_coefficient_literals();
+    std::vector<int> get_antecedents() { return this->antecedents; }
 };
 
 #endif // CONSTRAINT_H_
