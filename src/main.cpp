@@ -3,6 +3,7 @@
 
 int main(){
     // ModelEvaluator model_evaluator("./test_instances/interesting_proofs/rup_php65.opb", "./test_instances/interesting_proofs/rup_php65.veripb");
-    ModelEvaluator model_evaluator("./test_instances/sip_proofs/g2-g3.opb", "./test_instances/sip_proofs/g2-g3.veripb");
+    // ModelEvaluator model_evaluator("./test_instances/sip_proofs/g2-g3.opb", "./test_instances/sip_proofs/g2-g3.veripb", true);
+    ModelEvaluator model_evaluator("./test_instances/sip_proofs/g2-g3.opb", "./test_instances/sip_proofs/g2-g3.veripb", true);
     return 0;
 }

@@ -1,19 +1,22 @@
 #include "model_evaluator.hpp"
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <stack>
-using namespace std;
+
 struct Operand
 {
   int id;
   Constraint constraint;
 };
 
-ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_file_path)
+ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_file_path, bool bw_checking)
 {
-  ifstream model_file(model_file_path);
-  ifstream proof_file(proof_file_path);
+  this->backwards_checking = bw_checking;
+  if (bw_checking) { printf("* Backwards Evaluation\n"); }
+  std::ifstream model_file(model_file_path);
+  std::ifstream proof_file(proof_file_path);
   printf("* model file path: %s\n", model_file_path.c_str());
   printf("* proof file path: %s\n", proof_file_path.c_str());
 
@@ -21,7 +24,7 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
   this->parsed_number_of_constraints = -1;
 
   if (model_file.is_open()) {
-    string line;
+    std::string line;
     while (getline(model_file, line)) {
       if (line.find("variable") != std::string::npos && line.find("constraint") != std::string::npos) {
         std::vector<std::string> line_tokens = tokenizer(line);
@@ -60,14 +63,14 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
   }
   model_file.close();
   if (proof_file.is_open()) {
-    string line;
+    std::string line;
     while (getline(proof_file, line)) {
       if (line.starts_with("pseudo")) {
         continue;
       } else if (line[0] == '*') {
         continue;
       } else if (line[0] == 'c') {
-        continue;
+        this->contradiction = std::stoi(tokenizer(line)[1]);
       } else if (line[0] == 'p') {
         parse_pol_step(line);
       } else if (line[0] == 'j') {
@@ -81,13 +84,14 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
       } else if (line[0] == 'f') {
         continue;
       }
-      // if (line[0] != '#' || line[0] != 'w' || line[0] != '*') {
-      //   printf("%d : ", static_cast<int>(this->constraint_db.size()));
-      //   for (auto &i : this->constraint_db.back().get_antecedents()) { printf("%d ", i); }
-      //   printf("\n");
-      // }
+      if (!backwards_checking && (line[0] != '#' || line[0] != 'w' || line[0] != '*')) {
+        printf("%d : ", static_cast<int>(this->constraint_db.size()));
+        for (auto &i : this->constraint_db.back().get_antecedents()) { printf("%d ", i); }
+        printf("\n");
+      }
     }
     proof_file.close();
+    if (this->backwards_checking) { this->evaluate_backwards(); }
   } else {
     printf("Unable to open proof file");
   }
@@ -279,12 +283,20 @@ void ModelEvaluator::parse_rup_step(const std::string &line)
 {
   std::vector<std::string> line_tokens = tokenizer(line);
   Constraint c = this->parse_constraint_step(line_tokens);
-  std::vector<int> antecedents = {};
   c.set_type('u');
+  if (this->backwards_checking) {
+    this->constraint_db.push_back(c);
+  } else {
+    this->check_rup_step(c);
+  }
+}
+
+std::vector<int> ModelEvaluator::check_rup_step(Constraint &c)
+{
+  std::vector<int> antecedents = {};
   c.negate();
   this->constraint_db.push_back(c);
-  std::unordered_set<int> t = {};
-  std::unordered_set<int> tau = c.propagate(t);
+  std::unordered_set<int> tau = c.propagate({});
   while (true) {
     int id = 0;
     for (auto it = this->constraint_db.begin(); it != this->constraint_db.end(); ++it) {
@@ -296,7 +308,7 @@ void ModelEvaluator::parse_rup_step(const std::string &line)
         c.negate();
         c.add_antecedents(antecedents);
         this->constraint_db.push_back(c);
-        return;
+        return antecedents;
       }
     }
     bool has_propagated = false;
@@ -317,18 +329,34 @@ void ModelEvaluator::parse_rup_step(const std::string &line)
   }
 }
 
-bool ModelEvaluator::check_rup_step(Constraint c){
 
-}
-
-void ModelEvaluator::write_antecedents_to_file()
+void ModelEvaluator::evaluate_backwards()
 {
-  std::ofstream antecedents_file;
-  antecedents_file.open("antecedents.txt");
-  for (auto &constraint : this->constraint_db) {
-    antecedents_file << constraint.get_degree() << " ";
-    for (auto &antecedent : constraint.get_antecedents()) { antecedents_file << antecedent << " "; }
-    antecedents_file << "\n";
+  std::set<int> core = { this->contradiction };
+  int number_of_constraints = static_cast<int>(this->constraint_db.size());
+  std::vector<int> antecedents;
+  for (int i = number_of_constraints; i > this->parsed_number_of_constraints; i--) {
+    if (core.size() == 0) {
+      printf("core is empty\n");
+      break;
+    }
+    if (i != *core.rbegin()) {
+      this->constraint_db.pop_back();
+    } else {
+      core.erase(i);
+      Constraint &constraint = this->constraint_db.back();
+      printf("%d : ", i);
+      if (constraint.type == 'p' || constraint.type == 'j') {
+        antecedents = constraint.get_antecedents();
+        core.insert(antecedents.begin(), antecedents.end());
+      } else if (constraint.type == 'u') {
+        this->constraint_db.pop_back();
+        antecedents = this->check_rup_step(constraint);
+        core.insert(antecedents.begin(), antecedents.end());
+      }
+      for (auto &i : antecedents) { printf("%d ", i); }
+      printf("\n");
+      this->constraint_db.pop_back();
+    }
   }
-  antecedents_file.close();
 }

@@ -17,13 +17,14 @@ private:
     int degree;
     int time_of_deletion = 0;
     std::vector<int> antecedents = {};
-    char type;
+    bool is_checked = false;
 
 public:
     Constraint(const std::vector<int> &literals, const std::vector<int> &coefficients, int degree);
     Constraint(const std::unordered_map<int, int> &parsed_literal_coefficient_map, int parsed_degree);
     Constraint();
     void negate();
+    char type;
     std::string literal_normalized_form();
     std::string coefficient_normalized_form();
     int slack(std::unordered_set<int> assignment);
