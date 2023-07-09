@@ -11,25 +11,26 @@ struct Operand
   Constraint constraint;
 };
 
-ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_file_path, bool bw_checking)
+ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_file_path, bool backwards_checking)
 {
-  this->backwards_checking = bw_checking;
-  if (bw_checking) { printf("* Backwards Evaluation\n"); }
+  this->backwards_checking = backwards_checking;
+  if (backwards_checking) { printf("* Backwards Evaluation\n"); }
   std::ifstream model_file(model_file_path);
   std::ifstream proof_file(proof_file_path);
   printf("* model file path: %s\n", model_file_path.c_str());
   printf("* proof file path: %s\n", proof_file_path.c_str());
 
   this->parsed_number_of_variables = -1;
-  this->parsed_number_of_constraints = -1;
+  this->model_constraints_counter = -1;
 
   if (model_file.is_open()) {
     std::string line;
     while (getline(model_file, line)) {
+      // printf("parsing line: %s\n", line.c_str());
       if (line.find("variable") != std::string::npos && line.find("constraint") != std::string::npos) {
         std::vector<std::string> line_tokens = tokenizer(line);
         this->parsed_number_of_variables = std::stoi(line_tokens[2]);
-        this->parsed_number_of_constraints = std::stoi(line_tokens[4]);
+        this->model_constraints_counter = std::stoi(line_tokens[4]);
         continue;
       }
       if (line[0] == '*') { continue; }
@@ -44,10 +45,10 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
           "Number of variables in the model file does not match the number of variables in the proof file");
       }
     }
-    if (this->parsed_number_of_constraints != -1) {
-      if (this->parsed_number_of_constraints != static_cast<int>(this->constraint_db.size())) {
+    if (this->model_constraints_counter != -1) {
+      if (this->model_constraints_counter != static_cast<int>(this->constraint_db.size())) {
         printf("model claims %d constraints, proof has %d constraints\n",
-          this->parsed_number_of_constraints,
+          this->model_constraints_counter,
           static_cast<int>(this->constraint_db.size()));
         throw std::runtime_error(
           "Number of constraints in the model file does not match the number of constraints in the proof file");
@@ -55,7 +56,7 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
     }
     printf("* MODEL SUCCESSFULLY PARSED, number of variables: %d, number of constraints: %d\n",
       this->parsed_number_of_variables,
-      this->parsed_number_of_constraints);
+      this->model_constraints_counter);
     model_file.close();
   } else {
     printf("Unable to open model file");
@@ -65,6 +66,7 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
   if (proof_file.is_open()) {
     std::string line;
     while (getline(proof_file, line)) {
+      // printf("parsing proof line: %s\n", line.c_str());
       if (line.starts_with("pseudo")) {
         continue;
       } else if (line[0] == '*') {
@@ -283,7 +285,9 @@ void ModelEvaluator::parse_rup_step(const std::string &line)
 {
   std::vector<std::string> line_tokens = tokenizer(line);
   Constraint c = this->parse_constraint_step(line_tokens);
+  // printf("constraint: %s\n", c.literal_normalized_form().c_str());
   c.set_type('u');
+  // printf("constraint: %s\n", c.literal_normalized_form().c_str());
   if (this->backwards_checking) {
     this->constraint_db.push_back(c);
   } else {
@@ -293,12 +297,15 @@ void ModelEvaluator::parse_rup_step(const std::string &line)
 
 std::vector<int> ModelEvaluator::check_rup_step(Constraint &c)
 {
+  // printf("😋 checking constraint: %s\n", c.literal_normalized_form().c_str());
   std::vector<int> antecedents = {};
   c.negate();
   this->constraint_db.push_back(c);
   std::unordered_set<int> tau = c.propagate({});
   while (true) {
     int id = 0;
+    // printf("\nantecedents: ");
+    // for (auto &i : antecedents) { printf("%d ", i); }
     for (auto it = this->constraint_db.begin(); it != this->constraint_db.end(); ++it) {
       Constraint &constraint = *it;
       id++;
@@ -333,30 +340,39 @@ std::vector<int> ModelEvaluator::check_rup_step(Constraint &c)
 void ModelEvaluator::evaluate_backwards()
 {
   std::set<int> core = { this->contradiction };
-  int number_of_constraints = static_cast<int>(this->constraint_db.size());
-  std::vector<int> antecedents;
-  for (int i = number_of_constraints; i > this->parsed_number_of_constraints; i--) {
+  int constraints_counter = static_cast<int>(this->constraint_db.size());
+  for (int i = constraints_counter; i > this->model_constraints_counter; i--) {
+    // printf("checking %d\n", i);
     if (core.size() == 0) {
-      printf("core is empty\n");
+      printf("* core is empty\n");
       break;
     }
+    // constraint is not in the core, thus removed.
     if (i != *core.rbegin()) {
       this->constraint_db.pop_back();
     } else {
       core.erase(i);
       Constraint &constraint = this->constraint_db.back();
       printf("%d : ", i);
+      std::vector<int> antecedents;
       if (constraint.type == 'p' || constraint.type == 'j') {
         antecedents = constraint.get_antecedents();
         core.insert(antecedents.begin(), antecedents.end());
       } else if (constraint.type == 'u') {
-        this->constraint_db.pop_back();
+        // logical bug here...
         antecedents = this->check_rup_step(constraint);
-        core.insert(antecedents.begin(), antecedents.end());
+        std::for_each(antecedents.begin(), antecedents.end(), [&](int j) {
+          if (j < i) {
+            core.insert(j);
+            printf("inserting %d\n", j);
+          }
+        });
       }
       for (auto &i : antecedents) { printf("%d ", i); }
       printf("\n");
       this->constraint_db.pop_back();
+      // printf("deleting %d\n", i);
     }
+    // while (*core.rbegin() >= i) { core.erase(*core.rbegin()); }
   }
 }

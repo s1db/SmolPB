@@ -1,0 +1,827 @@
+* Backwards Evaluation
+* model file path: ./test_instances/interesting_proofs/rup_php65.opb
+* proof file path: ./test_instances/interesting_proofs/rup_php65.veripb
+* MODEL SUCCESSFULLY PARSED, number of variables: 30, number of constraints: 11
+186 : inserting 3
+inserting 4
+inserting 6
+inserting 8
+inserting 10
+inserting 31
+inserting 81
+inserting 98
+inserting 178
+inserting 179
+inserting 180
+inserting 171
+inserting 151
+inserting 177
+inserting 161
+inserting 7
+3 4 6 8 10 31 81 98 178 179 180 171 151 177 161 7 
+180 : inserting 3
+inserting 5
+inserting 26
+inserting 76
+inserting 93
+inserting 173
+inserting 175
+inserting 35
+inserting 119
+inserting 167
+inserting 168
+inserting 169
+inserting 170
+inserting 171
+inserting 174
+inserting 156
+inserting 7
+3 5 26 76 93 173 175 35 119 167 168 169 170 171 174 156 7 
+179 : inserting 3
+inserting 5
+inserting 26
+inserting 76
+inserting 93
+inserting 173
+inserting 175
+inserting 35
+inserting 119
+inserting 167
+inserting 168
+inserting 169
+inserting 170
+inserting 171
+inserting 174
+inserting 156
+inserting 7
+3 5 26 76 93 173 175 35 119 167 168 169 170 171 174 156 7 
+178 : inserting 3
+inserting 5
+inserting 26
+inserting 76
+inserting 93
+inserting 173
+inserting 175
+inserting 35
+inserting 119
+inserting 167
+inserting 168
+inserting 169
+inserting 170
+inserting 171
+inserting 174
+inserting 156
+inserting 7
+3 5 26 76 93 173 175 35 119 167 168 169 170 171 174 156 7 
+177 : inserting 3
+inserting 5
+inserting 26
+inserting 76
+inserting 93
+inserting 173
+inserting 175
+inserting 35
+inserting 119
+inserting 167
+inserting 168
+inserting 169
+inserting 170
+inserting 171
+inserting 174
+inserting 156
+inserting 7
+3 5 26 76 93 173 175 35 119 167 168 169 170 171 174 156 7 
+175 : inserting 25
+inserting 64
+inserting 75
+inserting 92
+inserting 172
+inserting 173
+inserting 3
+inserting 118
+inserting 174
+inserting 24
+inserting 165
+inserting 171
+inserting 143
+inserting 3
+25 64 75 92 172 173 3 118 174 24 165 171 143 3 
+174 : inserting 25
+inserting 64
+inserting 75
+inserting 92
+inserting 172
+inserting 173
+inserting 3
+inserting 118
+inserting 24
+inserting 165
+inserting 171
+inserting 143
+inserting 3
+25 64 75 92 172 173 3 118 174 24 165 171 143 3 
+173 : inserting 25
+inserting 64
+inserting 75
+inserting 92
+inserting 172
+inserting 3
+inserting 118
+inserting 24
+inserting 165
+inserting 171
+inserting 143
+inserting 3
+25 64 75 92 172 173 3 118 174 24 165 171 143 3 
+172 : inserting 25
+inserting 64
+inserting 75
+inserting 92
+inserting 3
+inserting 118
+inserting 24
+inserting 165
+inserting 171
+inserting 143
+inserting 3
+25 64 75 92 172 173 3 118 174 24 165 171 143 3 
+171 : inserting 25
+inserting 64
+inserting 75
+inserting 92
+inserting 3
+inserting 118
+inserting 24
+inserting 165
+inserting 143
+inserting 3
+25 64 75 92 172 173 3 118 174 24 165 171 143 3 
+170 : inserting 25
+inserting 64
+inserting 75
+inserting 92
+inserting 3
+inserting 118
+inserting 24
+inserting 165
+inserting 143
+inserting 3
+25 64 75 92 172 173 3 118 174 24 165 171 143 3 
+169 : inserting 25
+inserting 64
+inserting 75
+inserting 92
+inserting 3
+inserting 118
+inserting 24
+inserting 165
+inserting 143
+inserting 3
+25 64 75 92 172 173 3 118 174 24 165 171 143 3 
+168 : inserting 25
+inserting 64
+inserting 75
+inserting 92
+inserting 3
+inserting 118
+inserting 24
+inserting 165
+inserting 143
+inserting 3
+25 64 75 92 172 173 3 118 174 24 165 171 143 3 
+167 : inserting 25
+inserting 64
+inserting 75
+inserting 92
+inserting 3
+inserting 118
+inserting 24
+inserting 165
+inserting 143
+inserting 3
+25 64 75 92 172 173 3 118 174 24 165 171 143 3 
+165 : inserting 24
+inserting 74
+inserting 91
+inserting 154
+inserting 144
+inserting 8
+24 74 91 171 174 154 167 170 144 8 
+161 : inserting 21
+inserting 71
+inserting 88
+inserting 3
+inserting 12
+inserting 25
+inserting 151
+inserting 154
+inserting 7
+21 71 88 169 3 12 170 25 151 168 154 167 161 7 
+156 : inserting 3
+inserting 4
+inserting 5
+inserting 17
+inserting 67
+inserting 84
+inserting 110
+inserting 115
+inserting 145
+inserting 150
+inserting 154
+inserting 11
+3 4 5 17 67 84 110 115 164 165 145 150 154 11 
+154 : inserting 3
+inserting 16
+inserting 66
+inserting 83
+inserting 28
+inserting 151
+inserting 21
+inserting 144
+inserting 7
+3 16 66 83 163 28 151 158 21 162 164 144 7 
+151 : inserting 3
+inserting 4
+inserting 14
+inserting 64
+inserting 81
+inserting 20
+inserting 137
+inserting 142
+inserting 7
+3 4 14 64 81 160 151 161 20 162 137 142 7 
+150 : inserting 3
+inserting 4
+inserting 14
+inserting 64
+inserting 81
+inserting 20
+inserting 137
+inserting 142
+inserting 7
+3 4 14 64 81 160 151 161 20 162 137 142 7 
+145 : inserting 4
+inserting 10
+inserting 60
+inserting 77
+inserting 3
+inserting 14
+inserting 139
+inserting 13
+inserting 19
+inserting 8
+4 10 60 77 157 3 14 139 158 13 19 8 
+144 : inserting 4
+inserting 10
+inserting 60
+inserting 77
+inserting 3
+inserting 14
+inserting 139
+inserting 13
+inserting 19
+inserting 8
+4 10 60 77 157 3 14 139 158 13 19 8 
+143 : inserting 4
+inserting 10
+inserting 60
+inserting 77
+inserting 3
+inserting 14
+inserting 139
+inserting 13
+inserting 19
+inserting 8
+4 10 60 77 157 3 14 139 158 13 19 8 
+142 : inserting 4
+inserting 10
+inserting 60
+inserting 77
+inserting 3
+inserting 14
+inserting 139
+inserting 13
+inserting 19
+inserting 8
+4 10 60 77 157 3 14 139 158 13 19 8 
+139 : inserting 4
+inserting 6
+inserting 8
+inserting 58
+inserting 75
+inserting 126
+inserting 127
+inserting 128
+inserting 3
+inserting 17
+inserting 131
+inserting 27
+4 6 8 58 75 154 126 127 128 3 157 17 156 131 27 
+137 : inserting 7
+inserting 11
+inserting 57
+inserting 74
+inserting 112
+inserting 9
+7 11 57 74 112 137 147 9 
+131 : inserting 23
+inserting 52
+inserting 69
+inserting 32
+inserting 41
+inserting 4
+inserting 25
+inserting 27
+inserting 31
+inserting 68
+inserting 3
+inserting 125
+inserting 121
+inserting 129
+inserting 7
+23 52 69 149 32 41 151 4 25 27 31 68 3 125 121 148 150 129 7 
+129 : inserting 3
+inserting 22
+inserting 24
+inserting 51
+inserting 68
+inserting 117
+inserting 128
+inserting 9
+3 22 24 51 68 148 117 133 134 128 9 
+128 : inserting 3
+inserting 22
+inserting 24
+inserting 51
+inserting 68
+inserting 117
+inserting 9
+3 22 24 51 68 148 117 133 134 128 9 
+127 : inserting 3
+inserting 22
+inserting 24
+inserting 51
+inserting 68
+inserting 117
+inserting 9
+3 22 24 51 68 148 117 133 134 128 9 
+126 : inserting 3
+inserting 22
+inserting 24
+inserting 51
+inserting 68
+inserting 117
+inserting 9
+3 22 24 51 68 148 117 133 134 128 9 
+125 : inserting 3
+inserting 22
+inserting 24
+inserting 51
+inserting 68
+inserting 117
+inserting 9
+3 22 24 51 68 148 117 133 134 128 9 
+121 : inserting 5
+inserting 19
+inserting 28
+inserting 37
+inserting 48
+inserting 65
+inserting 4
+inserting 3
+inserting 58
+inserting 7
+5 19 28 37 48 65 147 4 3 58 139 140 133 142 143 145 146 127 7 
+119 : inserting 36
+inserting 47
+inserting 64
+inserting 51
+inserting 5
+inserting 4
+36 47 64 145 51 147 119 120 124 125 5 126 4 
+118 : inserting 36
+inserting 47
+inserting 64
+inserting 51
+inserting 5
+inserting 4
+36 47 64 145 51 147 119 120 124 125 5 126 4 
+117 : inserting 36
+inserting 47
+inserting 64
+inserting 51
+inserting 5
+inserting 4
+36 47 64 145 51 147 119 120 124 125 5 126 4 
+115 : inserting 17
+inserting 35
+inserting 46
+inserting 63
+inserting 89
+inserting 94
+inserting 16
+inserting 48
+inserting 7
+17 35 46 63 89 94 144 16 48 121 142 130 125 7 
+112 : inserting 24
+inserting 33
+inserting 44
+inserting 61
+inserting 7
+24 33 44 61 114 116 7 
+110 : inserting 43
+inserting 60
+inserting 86
+inserting 16
+43 60 86 113 16 
+98 : inserting 3
+inserting 21
+inserting 32
+inserting 49
+inserting 48
+inserting 7
+3 21 32 49 108 119 120 48 115 105 7 
+94 : inserting 29
+inserting 46
+inserting 7
+29 46 126 114 125 99 127 106 7 
+93 : inserting 29
+inserting 46
+inserting 7
+29 46 126 114 125 99 127 106 7 
+92 : inserting 29
+inserting 46
+inserting 7
+29 46 126 114 125 99 127 106 7 
+91 : inserting 29
+inserting 46
+inserting 7
+29 46 126 114 125 99 127 106 7 
+89 : inserting 8
+inserting 5
+inserting 7
+inserting 17
+inserting 28
+inserting 45
+inserting 4
+inserting 3
+inserting 9
+8 5 7 17 28 45 125 127 4 3 114 128 100 98 101 105 9 
+88 : inserting 8
+inserting 5
+inserting 7
+inserting 17
+inserting 28
+inserting 45
+inserting 4
+inserting 3
+inserting 9
+8 5 7 17 28 45 125 127 4 3 114 128 100 98 101 105 9 
+86 : inserting 7
+inserting 6
+inserting 16
+inserting 27
+inserting 44
+inserting 28
+inserting 7
+7 6 16 27 44 102 123 96 124 28 125 104 7 
+84 : inserting 26
+inserting 43
+inserting 15
+inserting 7
+26 43 123 15 124 103 94 122 109 112 7 
+83 : inserting 26
+inserting 43
+inserting 15
+inserting 7
+26 43 123 15 124 103 94 122 109 112 7 
+81 : inserting 3
+inserting 4
+inserting 14
+inserting 25
+inserting 42
+inserting 31
+inserting 7
+3 4 14 25 42 121 31 111 122 123 95 102 7 
+77 : inserting 4
+inserting 7
+inserting 11
+inserting 22
+inserting 39
+inserting 3
+inserting 9
+4 7 11 22 39 118 121 3 115 119 104 105 106 96 107 108 9 
+76 : inserting 4
+inserting 7
+inserting 11
+inserting 22
+inserting 39
+inserting 3
+inserting 9
+4 7 11 22 39 118 121 3 115 119 104 105 106 96 107 108 9 
+75 : inserting 4
+inserting 7
+inserting 11
+inserting 22
+inserting 39
+inserting 3
+inserting 9
+4 7 11 22 39 118 121 3 115 119 104 105 106 96 107 108 9 
+74 : inserting 4
+inserting 7
+inserting 11
+inserting 22
+inserting 39
+inserting 3
+inserting 9
+4 7 11 22 39 118 121 3 115 119 104 105 106 96 107 108 9 
+71 : inserting 3
+inserting 5
+inserting 6
+inserting 9
+inserting 20
+inserting 37
+inserting 7
+3 5 6 9 20 37 116 118 113 119 94 104 108 7 
+69 : inserting 3
+inserting 4
+inserting 5
+inserting 8
+inserting 19
+inserting 36
+inserting 62
+inserting 9
+3 4 5 8 19 36 115 87 88 89 118 62 82 85 107 9 
+68 : inserting 3
+inserting 4
+inserting 5
+inserting 8
+inserting 19
+inserting 36
+inserting 62
+inserting 9
+3 4 5 8 19 36 115 87 88 89 118 62 82 85 107 9 
+67 : inserting 3
+inserting 4
+inserting 5
+inserting 8
+inserting 19
+inserting 36
+inserting 62
+inserting 9
+3 4 5 8 19 36 115 87 88 89 118 62 82 85 107 9 
+66 : inserting 3
+inserting 4
+inserting 5
+inserting 8
+inserting 19
+inserting 36
+inserting 62
+inserting 9
+3 4 5 8 19 36 115 87 88 89 118 62 82 85 107 9 
+65 : inserting 3
+inserting 4
+inserting 5
+inserting 8
+inserting 19
+inserting 36
+inserting 62
+inserting 9
+3 4 5 8 19 36 115 87 88 89 118 62 82 85 107 9 
+64 : inserting 3
+inserting 4
+inserting 5
+inserting 8
+inserting 19
+inserting 36
+inserting 62
+inserting 9
+3 4 5 8 19 36 115 87 88 89 118 62 82 85 107 9 
+63 : inserting 3
+inserting 4
+inserting 5
+inserting 8
+inserting 19
+inserting 36
+inserting 62
+inserting 9
+3 4 5 8 19 36 115 87 88 89 118 62 82 85 107 9 
+62 : inserting 3
+inserting 4
+inserting 5
+inserting 8
+inserting 19
+inserting 36
+inserting 9
+3 4 5 8 19 36 115 87 88 89 118 62 82 85 107 9 
+61 : inserting 3
+inserting 4
+inserting 5
+inserting 8
+inserting 19
+inserting 36
+inserting 9
+3 4 5 8 19 36 115 87 88 89 118 62 82 85 107 9 
+60 : inserting 3
+inserting 4
+inserting 5
+inserting 8
+inserting 19
+inserting 36
+inserting 9
+3 4 5 8 19 36 115 87 88 89 118 62 82 85 107 9 
+58 : inserting 3
+inserting 4
+inserting 7
+inserting 18
+inserting 35
+inserting 8
+3 4 7 18 35 114 86 87 88 92 116 61 106 84 8 
+57 : inserting 3
+inserting 4
+inserting 7
+inserting 18
+inserting 35
+inserting 8
+3 4 7 18 35 114 86 87 88 92 116 61 106 84 8 
+52 : inserting 3
+inserting 14
+inserting 31
+inserting 10
+inserting 8
+3 14 31 110 82 83 84 100 111 80 112 10 8 
+51 : inserting 3
+inserting 14
+inserting 31
+inserting 10
+inserting 8
+3 14 31 110 82 83 84 100 111 80 112 10 8 
+49 : inserting 6
+inserting 13
+inserting 30
+inserting 3
+inserting 5
+inserting 8
+inserting 21
+6 13 30 111 112 3 5 106 109 8 81 83 21 
+48 : inserting 6
+inserting 13
+inserting 30
+inserting 3
+inserting 5
+inserting 8
+inserting 21
+6 13 30 111 112 3 5 106 109 8 81 83 21 
+47 : inserting 6
+inserting 13
+inserting 30
+inserting 3
+inserting 5
+inserting 8
+inserting 21
+6 13 30 111 112 3 5 106 109 8 81 83 21 
+46 : inserting 6
+inserting 13
+inserting 30
+inserting 3
+inserting 5
+inserting 8
+inserting 21
+6 13 30 111 112 3 5 106 109 8 81 83 21 
+45 : inserting 6
+inserting 13
+inserting 30
+inserting 3
+inserting 5
+inserting 8
+inserting 21
+6 13 30 111 112 3 5 106 109 8 81 83 21 
+44 : inserting 6
+inserting 13
+inserting 30
+inserting 3
+inserting 5
+inserting 8
+inserting 21
+6 13 30 111 112 3 5 106 109 8 81 83 21 
+43 : inserting 6
+inserting 13
+inserting 30
+inserting 3
+inserting 5
+inserting 8
+inserting 21
+6 13 30 111 112 3 5 106 109 8 81 83 21 
+42 : inserting 6
+inserting 13
+inserting 30
+inserting 3
+inserting 5
+inserting 8
+inserting 21
+6 13 30 111 112 3 5 106 109 8 81 83 21 
+41 : inserting 6
+inserting 13
+inserting 30
+inserting 3
+inserting 5
+inserting 8
+inserting 21
+6 13 30 111 112 3 5 106 109 8 81 83 21 
+39 : inserting 3
+inserting 12
+inserting 29
+inserting 5
+inserting 7
+inserting 7
+3 12 29 109 5 110 89 80 108 7 98 7 
+37 : inserting 11
+inserting 28
+inserting 3
+inserting 19
+inserting 16
+11 28 109 3 19 54 81 16 
+36 : inserting 11
+inserting 28
+inserting 3
+inserting 19
+inserting 16
+11 28 109 3 19 54 81 16 
+35 : inserting 11
+inserting 28
+inserting 3
+inserting 19
+inserting 16
+11 28 109 3 19 54 81 16 
+33 : inserting 10
+inserting 27
+inserting 7
+10 27 107 53 101 102 103 88 7 
+32 : inserting 10
+inserting 27
+inserting 7
+10 27 107 53 101 102 103 88 7 
+31 : inserting 10
+inserting 27
+inserting 7
+10 27 107 53 101 102 103 88 7 
+30 : inserting 10
+inserting 27
+inserting 7
+10 27 107 53 101 102 103 88 7 
+29 : inserting 10
+inserting 27
+inserting 7
+10 27 107 53 101 102 103 88 7 
+28 : inserting 10
+inserting 27
+inserting 7
+10 27 107 53 101 102 103 88 7 
+27 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+26 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+25 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+24 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+23 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+22 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+21 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+20 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+19 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+18 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+17 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+16 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+15 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+14 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+13 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 
+12 : inserting 10
+inserting 7
+10 27 107 53 101 102 103 88 7 

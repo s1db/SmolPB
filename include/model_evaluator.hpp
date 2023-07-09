@@ -12,7 +12,7 @@ private:
     std::map<std::string, int> literal_id_map;
     std::map<int, std::string> id_literal_map;
     int parsed_number_of_variables;
-    int parsed_number_of_constraints;
+    int model_constraints_counter;
     int contradiction = 0;
     int resolve_literal_id(std::string literal);
     int get_literal_id(std::string literal);
