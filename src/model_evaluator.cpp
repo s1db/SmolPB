@@ -341,8 +341,8 @@ void ModelEvaluator::evaluate_backwards()
 {
   std::set<int> core = { this->contradiction };
   int constraints_counter = static_cast<int>(this->constraint_db.size());
+  std::vector<int> antecedents;
   for (int i = constraints_counter; i > this->model_constraints_counter; i--) {
-    // printf("checking %d\n", i);
     if (core.size() == 0) {
       printf("* core is empty\n");
       break;
@@ -354,7 +354,7 @@ void ModelEvaluator::evaluate_backwards()
       core.erase(i);
       Constraint &constraint = this->constraint_db.back();
       printf("%d : ", i);
-      std::vector<int> antecedents;
+      antecedents.clear();
       if (constraint.type == 'p' || constraint.type == 'j') {
         antecedents = constraint.get_antecedents();
         core.insert(antecedents.begin(), antecedents.end());
@@ -371,8 +371,6 @@ void ModelEvaluator::evaluate_backwards()
       for (auto &i : antecedents) { printf("%d ", i); }
       printf("\n");
       this->constraint_db.pop_back();
-      // printf("deleting %d\n", i);
     }
-    // while (*core.rbegin() >= i) { core.erase(*core.rbegin()); }
   }
 }
