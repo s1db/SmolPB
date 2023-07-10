@@ -5,6 +5,7 @@
 #include <sstream>
 #include <stack>
 
+// change to sum type
 struct Operand
 {
   int id;
@@ -26,7 +27,6 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
   if (model_file.is_open()) {
     std::string line;
     while (getline(model_file, line)) {
-      // printf("parsing line: %s\n", line.c_str());
       if (line.find("variable") != std::string::npos && line.find("constraint") != std::string::npos) {
         std::vector<std::string> line_tokens = tokenizer(line);
         this->parsed_number_of_variables = std::stoi(line_tokens[2]);
@@ -66,7 +66,6 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
   if (proof_file.is_open()) {
     std::string line;
     while (getline(proof_file, line)) {
-      // printf("parsing proof line: %s\n", line.c_str());
       if (line.starts_with("pseudo")) {
         continue;
       } else if (line[0] == '*') {
@@ -85,11 +84,6 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
         continue;
       } else if (line[0] == 'f') {
         continue;
-      }
-      if (!backwards_checking && (line[0] != '#' || line[0] != 'w' || line[0] != '*')) {
-        printf("%d : ", static_cast<int>(this->constraint_db.size()));
-        for (auto &i : this->constraint_db.back().get_antecedents()) { printf("%d ", i); }
-        printf("\n");
       }
     }
     proof_file.close();
@@ -131,11 +125,7 @@ void ModelEvaluator::parse_pol_step(const std::string &line)
   std::vector<std::string> tokens = tokenizer(line);
   std::vector<int> antecedents;
   tokens.pop_back();
-  // printf("tokens: ");
-  // for (auto &token : tokens) { printf("%s ", token.c_str()); }
-  // printf("\n");
   for (const std::string &token : tokens) {
-    // printf("checking token: %s\n", token.c_str());
     if (token == "+" || token == "-" || token == "*" || token == "/") {
       if (operand_stack.size() < 2) { throw std::runtime_error("Invalid RPN expression: insufficient operands."); }
       Operand operand2 = operand_stack.top();
@@ -144,18 +134,14 @@ void ModelEvaluator::parse_pol_step(const std::string &line)
       operand_stack.pop();
 
       Constraint result;
-      // printf("operand 1 ID: %d\n", operand1.id);
-      // printf("operand 2 ID: %d\n", operand2.id);
       if (token == "+") {
         if (operand1.id != -1) {
           operand1.constraint = this->get_constraint(operand1.id);
           antecedents.push_back(operand1.id);
-          // printf("antecedent: %d\n", operand1.id);
         }
         if (operand2.id != -1) {
           operand2.constraint = this->get_constraint(operand2.id);
           antecedents.push_back(operand2.id);
-          // printf("antecedent: %d\n", operand2.id);
         }
         result = operand1.constraint + operand2.constraint;
       } else if (token != "-") {
@@ -285,36 +271,26 @@ void ModelEvaluator::parse_rup_step(const std::string &line)
 {
   std::vector<std::string> line_tokens = tokenizer(line);
   Constraint c = this->parse_constraint_step(line_tokens);
-  // printf("constraint: %s\n", c.literal_normalized_form().c_str());
   c.set_type('u');
-  // printf("constraint: %s\n", c.literal_normalized_form().c_str());
-  if (this->backwards_checking) {
-    this->constraint_db.push_back(c);
-  } else {
-    this->check_rup_step(c);
-  }
+  this->constraint_db.push_back(c);
+  if (!this->backwards_checking) { this->check_rup_step(); }
 }
 
-std::vector<int> ModelEvaluator::check_rup_step(Constraint &c)
+std::vector<int> ModelEvaluator::check_rup_step()
 {
-  // printf("😋 checking constraint: %s\n", c.literal_normalized_form().c_str());
+  Constraint &c = this->constraint_db.back();
   std::vector<int> antecedents = {};
   c.negate();
-  this->constraint_db.push_back(c);
   std::unordered_set<int> tau = c.propagate({});
   while (true) {
     int id = 0;
-    // printf("\nantecedents: ");
-    // for (auto &i : antecedents) { printf("%d ", i); }
     for (auto it = this->constraint_db.begin(); it != this->constraint_db.end(); ++it) {
       Constraint &constraint = *it;
       id++;
       if (constraint.is_unsatisfied(tau)) {
         antecedents.push_back(id);
-        this->constraint_db.pop_back();
         c.negate();
         c.add_antecedents(antecedents);
-        this->constraint_db.push_back(c);
         return antecedents;
       }
     }
@@ -341,36 +317,26 @@ void ModelEvaluator::evaluate_backwards()
 {
   std::set<int> core = { this->contradiction };
   int constraints_counter = static_cast<int>(this->constraint_db.size());
-  std::vector<int> antecedents;
+  // std::vector<int> antecedents;
   for (int i = constraints_counter; i > this->model_constraints_counter; i--) {
     if (core.size() == 0) {
       printf("* core is empty\n");
       break;
     }
-    // constraint is not in the core, thus removed.
-    if (i != *core.rbegin()) {
-      this->constraint_db.pop_back();
-    } else {
+    if (i == *core.rbegin()) {
       core.erase(i);
       Constraint &constraint = this->constraint_db.back();
       printf("%d : ", i);
-      antecedents.clear();
-      if (constraint.type == 'p' || constraint.type == 'j') {
-        antecedents = constraint.get_antecedents();
-        core.insert(antecedents.begin(), antecedents.end());
-      } else if (constraint.type == 'u') {
-        // logical bug here...
-        antecedents = this->check_rup_step(constraint);
-        std::for_each(antecedents.begin(), antecedents.end(), [&](int j) {
-          if (j < i) {
-            core.insert(j);
-            printf("inserting %d\n", j);
-          }
-        });
-      }
-      for (auto &i : antecedents) { printf("%d ", i); }
+      if (constraint.type == 'u') { this->check_rup_step(); }
+      std::for_each(constraint.antecedents.begin(), constraint.antecedents.end(), [&](int j) {
+        if (j < i) {
+          core.insert(j);
+          // printf("inserting %d\n", j);
+        }
+      });
+      for (auto &i : constraint.antecedents) { printf("%d ", i); }
       printf("\n");
-      this->constraint_db.pop_back();
     }
+    this->constraint_db.pop_back();
   }
 }

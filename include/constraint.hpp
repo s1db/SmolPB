@@ -16,7 +16,6 @@ private:
     std::unordered_map<int, int> literal_coefficient_map;
     int degree;
     int time_of_deletion = 0;
-    std::vector<int> antecedents = {};
     bool is_checked = false;
 
 public:
@@ -44,7 +43,7 @@ public:
     bool operator==(const Constraint &other);
     bool is_undefined();
     void remove_zero_coefficient_literals();
-    std::vector<int> get_antecedents() { return this->antecedents; }
+    std::vector<int> antecedents = {};
 };
 
 #endif // CONSTRAINT_H_

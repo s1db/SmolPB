@@ -23,7 +23,7 @@ private:
     void parse_pol_step(const std::string& line);
     void parse_j_step(const std::string& line);
     void write_antecedents_to_file(std::string& file_path);
-    std::vector<int> check_rup_step(Constraint &c);
+    std::vector<int> check_rup_step();
     void evaluate_backwards();
 
 public:
