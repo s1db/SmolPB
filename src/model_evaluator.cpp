@@ -5,7 +5,7 @@
 #include <sstream>
 #include <stack>
 
-// change to sum type
+// TODO: change to sum type
 struct Operand
 {
   int id;
@@ -83,6 +83,8 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
       } else if (line[0] == 'w') {
         continue;
       } else if (line[0] == 'f') {
+        continue;
+      } else if (line[0] == 'v') {
         continue;
       }
     }
@@ -276,33 +278,53 @@ void ModelEvaluator::parse_rup_step(const std::string &line)
   if (!this->backwards_checking) { this->check_rup_step(); }
 }
 
-std::vector<int> ModelEvaluator::check_rup_step()
+void ModelEvaluator::check_rup_step()
 {
+  std::map<int, int> literal_assigned_by_constraint_id;
+  std::map<int, std::unordered_set<int>> constraint_propagated_because_of_literals;
   Constraint &c = this->constraint_db.back();
   std::vector<int> antecedents = {};
   c.negate();
-  std::unordered_set<int> tau = c.propagate({});
+  std::unordered_set<int> tau;
   while (true) {
-    int id = 0;
     for (auto it = this->constraint_db.begin(); it != this->constraint_db.end(); ++it) {
       Constraint &constraint = *it;
-      id++;
+      int constraint_id = std::distance(this->constraint_db.begin(), it) + 1;
       if (constraint.is_unsatisfied(tau)) {
-        antecedents.push_back(id);
+        antecedents.push_back(constraint_id);
+        std::unordered_set<int> required_literals = constraint.assigned(tau);
         c.negate();
-        c.add_antecedents(antecedents);
-        return antecedents;
+        if (!this->conflict_analysis) {
+          c.add_antecedents(antecedents);
+          return;
+        }
+        std::vector<int> used_constraints = {};
+        while (!required_literals.empty()) {
+          int literal = *required_literals.begin();
+          required_literals.erase(literal);
+          int constraint_id = literal_assigned_by_constraint_id[literal];
+          // check if constraint is already used in vector
+          if (std::find(used_constraints.begin(), used_constraints.end(), constraint_id) != used_constraints.end()) {
+            continue;
+          }
+          std::unordered_set<int> &dependant_literals = constraint_propagated_because_of_literals[constraint_id];
+          used_constraints.push_back(constraint_id);
+          required_literals.insert(dependant_literals.begin(), dependant_literals.end());
+        }
+        c.add_antecedents(used_constraints);
+        return;
       }
     }
     bool has_propagated = false;
-    // probably a better was of doing this...
-    id = 0;
-    for (auto it = this->constraint_db.rbegin(); it != this->constraint_db.rend(); ++it) {
+    for (auto it = this->constraint_db.begin(); it != this->constraint_db.end(); ++it) {
       Constraint &constraint = *it;
       std::unordered_set<int> propagated = constraint.propagate(tau);
-      id++;
       if (propagated.size() > 0) {
-        antecedents.push_back(id);
+        int constraint_id = std::distance(this->constraint_db.begin(), it) + 1;
+        std::unordered_set<int> assigned = constraint.assigned(tau);
+        constraint_propagated_because_of_literals[constraint_id].insert(assigned.begin(), assigned.end());
+        for (auto &i : propagated) { literal_assigned_by_constraint_id[i] = constraint_id; }
+        antecedents.push_back(constraint_id);
         tau.insert(propagated.begin(), propagated.end());
         has_propagated = true;
         break;
@@ -315,24 +337,28 @@ std::vector<int> ModelEvaluator::check_rup_step()
 
 void ModelEvaluator::evaluate_backwards()
 {
-  std::set<int> core = { this->contradiction };
+  core.insert(this->contradiction);
   int constraints_counter = static_cast<int>(this->constraint_db.size());
-  // std::vector<int> antecedents;
+
   for (int i = constraints_counter; i > this->model_constraints_counter; i--) {
     if (core.size() == 0) {
       printf("* core is empty\n");
       break;
     }
+    // printf("core: ");
+    // for (auto &i : core) { printf("%d ", i); }
+    // printf("\n");
+    // printf("largest constraint in core: %d\n", *core.rbegin());
+    // printf("constraint_db size: %d\n", static_cast<int>(this->constraint_db.size()));
+    // printf("--------------------------------\n");
     if (i == *core.rbegin()) {
       core.erase(i);
       Constraint &constraint = this->constraint_db.back();
       printf("%d : ", i);
       if (constraint.type == 'u') { this->check_rup_step(); }
       std::for_each(constraint.antecedents.begin(), constraint.antecedents.end(), [&](int j) {
-        if (j < i) {
-          core.insert(j);
-          // printf("inserting %d\n", j);
-        }
+        // only add to core if
+        if (j < i) { core.insert(j); }
       });
       for (auto &i : constraint.antecedents) { printf("%d ", i); }
       printf("\n");

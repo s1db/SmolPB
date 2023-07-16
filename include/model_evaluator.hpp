@@ -2,6 +2,7 @@
 #define MODEL_EVALUATOR_HPP_
 #include <string>
 #include <map>
+#include <set>
 
 #include "constraint.hpp"
 
@@ -17,13 +18,14 @@ private:
     int resolve_literal_id(std::string literal);
     int get_literal_id(std::string literal);
     bool backwards_checking = false;
+    bool conflict_analysis = true;
+    std::set<int> core;
     Constraint parse_constraint_step(const std::string& line);
     Constraint parse_constraint_step(std::vector<std::string> line);
     void parse_rup_step(const std::string& line);
     void parse_pol_step(const std::string& line);
     void parse_j_step(const std::string& line);
-    void write_antecedents_to_file(std::string& file_path);
-    std::vector<int> check_rup_step();
+    void check_rup_step();
     void evaluate_backwards();
 
 public:

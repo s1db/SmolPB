@@ -102,6 +102,7 @@ std::unordered_set<int> Constraint::propagate(std::unordered_set<int> assignment
       coefficient *= -1;
       literal *= -1;// flips the literal conversion to CNF
     }
+    // if slack is less than coefficient and literal is unassigned
     if (new_slack < coefficient && assignment.find(literal) == assignment.end()
         && assignment.find(-1 * literal) == assignment.end()) {
       result.insert(literal);
@@ -184,8 +185,16 @@ void Constraint::remove_zero_coefficient_literals()
   }
 }
 
-/*
-b 42 -- breakpoint
-stack -- ananlyse stack
-
-*/
+std::unordered_set<int> Constraint::assigned(std::unordered_set<int> assignment){
+  std::unordered_set<int> result;
+  for (auto &kv : literal_coefficient_map) {
+    int literal = kv.first;
+    if (assignment.find(literal) != assignment.end()) {
+      result.insert(literal);
+    }
+    else if (assignment.find(-1 * literal) != assignment.end()) {
+      result.insert(-1 * literal);
+    }
+  }
+  return result;
+}

@@ -30,6 +30,7 @@ public:
     bool is_unsatisfied(std::unordered_set<int> &assignment);
     std::unordered_set<int> propagate(std::unordered_set<int> assignment);
     std::unordered_set<int> get_literal_ids();
+    std::unordered_set<int> assigned(std::unordered_set<int> assignment);
     std::unordered_map<int, int> get_coefficients();
     int get_degree();
     void set_time_of_deletion(int time);

@@ -24,6 +24,14 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
+
+# set(TRIMMER_SOURCES
+#     src/trimmer.cpp
+# )
+
+# add_executable(trim ${TRIMMER_SOURCES})
+
+
 # Download and include Catch2 library
 include(FetchContent)
 FetchContent_Declare(
