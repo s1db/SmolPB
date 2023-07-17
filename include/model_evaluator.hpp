@@ -33,6 +33,7 @@ public:
     void add_model_line(std::string &line);
     Constraint get_constraint(unsigned long index);
     static std::vector<std::string> tokenizer(const std::string &line);
+    std::vector<int> antecedents;
 
 };
 

@@ -345,14 +345,9 @@ void ModelEvaluator::evaluate_backwards()
       printf("* core is empty\n");
       break;
     }
-    // printf("core: ");
-    // for (auto &i : core) { printf("%d ", i); }
-    // printf("\n");
-    // printf("largest constraint in core: %d\n", *core.rbegin());
-    // printf("constraint_db size: %d\n", static_cast<int>(this->constraint_db.size()));
-    // printf("--------------------------------\n");
     if (i == *core.rbegin()) {
       core.erase(i);
+      antecedents.push_back(i);
       Constraint &constraint = this->constraint_db.back();
       printf("%d : ", i);
       if (constraint.type == 'u') { this->check_rup_step(); }

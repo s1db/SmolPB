@@ -18,18 +18,12 @@ set(SOURCES
     src/main.cpp
     src/constraint.cpp
     src/model_evaluator.cpp
+    src/trimmer.cpp
 )
 
 # Create the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE include)
-
-
-# set(TRIMMER_SOURCES
-#     src/trimmer.cpp
-# )
-
-# add_executable(trim ${TRIMMER_SOURCES})
 
 
 # Download and include Catch2 library
@@ -51,6 +45,7 @@ add_executable(tests
     tests/test_model_evaluator.cpp
     src/constraint.cpp
     src/model_evaluator.cpp
+    src/trimmer.cpp
 )
 
 # Link the Catch2 library
