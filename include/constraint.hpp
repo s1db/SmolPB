@@ -7,6 +7,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <string>
+#include <limits>
 
 
 class Constraint
@@ -15,13 +16,13 @@ private:
     // Maps literal id to coefficient
     std::unordered_map<int, int> literal_coefficient_map;
     int degree;
-    int time_of_deletion = 0;
     bool is_checked = false;
 
 public:
     Constraint(const std::vector<int> &literals, const std::vector<int> &coefficients, int degree);
     Constraint(const std::unordered_map<int, int> &parsed_literal_coefficient_map, int parsed_degree);
     Constraint();
+    int time_of_deletion = std::numeric_limits<int>::max();
     void negate();
     char type;
     std::string literal_normalized_form();
@@ -45,6 +46,8 @@ public:
     bool is_undefined();
     void remove_zero_coefficient_literals();
     std::vector<int> antecedents = {};
+    void saturate();
+    void weaken(int literal_id);
 };
 
 #endif // CONSTRAINT_H_

@@ -69,15 +69,15 @@ std::string Constraint::coefficient_normalized_form()
 }
 int Constraint::slack(std::unordered_set<int> assignment)
 {
-  int slack = -1 * this->degree; // -A
+  int slack = -1 * this->degree;// -A
   // printf("constraint: %s", this->literal_normalized_form().c_str());
   for (auto &kv : literal_coefficient_map) {
     int literal = kv.first;
     int coefficient = kv.second;
     if (coefficient < 0) {
       coefficient *= -1;
-      literal *= -1; // flips the literal conversion to CNF
-      slack -= coefficient; // subtracts to the -A while converting to CNF
+      literal *= -1;// flips the literal conversion to CNF
+      slack -= coefficient;// subtracts to the -A while converting to CNF
     }
     // if literal is unsatisfied by the assignment, then do nothing
     if (assignment.find(-literal) != assignment.end()) { continue; }
@@ -165,7 +165,8 @@ bool Constraint::is_undefined() { return this->degree == 0 && this->literal_coef
 void Constraint::set_type(char type) { this->type = type; }
 
 void Constraint::add_antecedents(int antecedent) { this->antecedents.push_back(antecedent); }
-void Constraint::add_antecedents(std::vector<int> antecedents){
+void Constraint::add_antecedents(std::vector<int> antecedents)
+{
   this->antecedents.insert(this->antecedents.end(), antecedents.begin(), antecedents.end());
 }
 Constraint::Constraint()
@@ -185,16 +186,43 @@ void Constraint::remove_zero_coefficient_literals()
   }
 }
 
-std::unordered_set<int> Constraint::assigned(std::unordered_set<int> assignment){
+std::unordered_set<int> Constraint::assigned(std::unordered_set<int> assignment)
+{
   std::unordered_set<int> result;
   for (auto &kv : literal_coefficient_map) {
     int literal = kv.first;
     if (assignment.find(literal) != assignment.end()) {
       result.insert(literal);
-    }
-    else if (assignment.find(-1 * literal) != assignment.end()) {
+    } else if (assignment.find(-1 * literal) != assignment.end()) {
       result.insert(-1 * literal);
     }
   }
   return result;
+}
+
+void Constraint::weaken(int literal_id)
+{
+  auto it = this->literal_coefficient_map.find(literal_id);
+  if (it != this->literal_coefficient_map.end()) {
+    this->literal_coefficient_map.erase(it);
+  }
+}
+
+void Constraint::saturate()
+{
+  int new_degree = this->degree;
+  for (auto &kv : this->literal_coefficient_map) {
+    int coefficient = kv.second;
+    if (coefficient < 0) {
+      coefficient *= -1;
+      new_degree += coefficient;
+    }
+  }
+  for (auto &kv : this->literal_coefficient_map) {
+    int literal = kv.first;
+    int coefficient = kv.second;
+    if (coefficient < 0) { coefficient *= -1; }
+    if (coefficient > new_degree && kv.second > 0) { this->literal_coefficient_map[literal] = new_degree; }
+    if (coefficient > new_degree && kv.second < 0) { this->literal_coefficient_map[literal] = -1 * new_degree; }
+  }
 }

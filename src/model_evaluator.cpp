@@ -15,11 +15,8 @@ struct Operand
 ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_file_path, bool backwards_checking)
 {
   this->backwards_checking = backwards_checking;
-  if (backwards_checking) { printf("* Backwards Evaluation\n"); }
   std::ifstream model_file(model_file_path);
   std::ifstream proof_file(proof_file_path);
-  printf("* model file path: %s\n", model_file_path.c_str());
-  printf("* proof file path: %s\n", proof_file_path.c_str());
 
   this->parsed_number_of_variables = -1;
   this->model_constraints_counter = -1;
@@ -54,9 +51,7 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
           "Number of constraints in the model file does not match the number of constraints in the proof file");
       }
     }
-    printf("* MODEL SUCCESSFULLY PARSED, number of variables: %d, number of constraints: %d\n",
-      this->parsed_number_of_variables,
-      this->model_constraints_counter);
+    printf("MODEL PARSED, CLOSING FILE\n");
     model_file.close();
   } else {
     printf("Unable to open model file");
@@ -65,30 +60,82 @@ ModelEvaluator::ModelEvaluator(std::string model_file_path, std::string proof_fi
   model_file.close();
   if (proof_file.is_open()) {
     std::string line;
+    std::map<int, std::set<int>> wipeout;
+    int active_level = 0;
     while (getline(proof_file, line)) {
+      // printf("parsing line: %s\n", line.c_str());
+      if (line.starts_with("\t")) { line = line.substr(1); }
       if (line.starts_with("pseudo")) {
+        continue;
+      } else if (line[0] == 'd' || line.starts_with("deld")) {
+        parse_deletion(line);
+        continue;
+      } else if (line[0] == 'f') {
+        proof_constraints_counter = std::stoi(tokenizer(line)[1]);
         continue;
       } else if (line[0] == '*') {
         continue;
-      } else if (line[0] == 'c') {
-        this->contradiction = std::stoi(tokenizer(line)[1]);
-      } else if (line[0] == 'p') {
-        parse_pol_step(line);
-      } else if (line[0] == 'j') {
-        parse_j_step(line);
-      } else if (line[0] == 'u') {
-        parse_rup_step(line);
+      } else if (line.starts_with("conclusion UNSAT")) {
+        this->contradiction = std::stoi(tokenizer(line)[3]);
+        continue;
       } else if (line[0] == '#') {
+        active_level = std::stoi(tokenizer(line)[1]);
+        wipeout[active_level] = {};
         continue;
       } else if (line[0] == 'w') {
+        std::vector<std::string> line_tokens = tokenizer(line);
+        int level = std::stoi(line_tokens[1]);
+        auto it = wipeout.lower_bound(level);
+        if (it != wipeout.end()) {
+          for (auto it2 = it; it2 != wipeout.end(); ++it2) {
+            for (int constraint_id : it2->second) {
+              this->constraint_db[constraint_id - 1].time_of_deletion = proof_constraints_counter;
+            }
+          }
+        }
         continue;
-      } else if (line[0] == 'f') {
-        continue;
-      } else if (line[0] == 'v') {
+
+      } else if (line.starts_with("end pseudo-Boolean") || line.starts_with("output")){
         continue;
       }
+
+
+      // proof steps
+      proof_constraints_counter++;
+      // printf("adding constraint %d to wipeout level %d\n", proof_constraints_counter, active_level);
+      wipeout[active_level].insert(proof_constraints_counter);
+      if (line[0] == 'u') {
+        parse_rup_step(line);
+      } else if (line[0] == 'j' || line.starts_with("ia")) {
+        parse_j_step(line);
+      } else if (line[0] == 'p' || line.starts_with("pol")) {
+        parse_pol_step(line);
+      } else if (line[0] == 'v') {
+        // not yet implemented
+        throw std::runtime_error("v not yet implemented");
+      } else if (line.starts_with("red")) {
+        // not yet implemented
+        parse_red_line(line);
+      }else if (line.starts_with("end")) {
+        proof_constraints_counter--;
+        int current_size = static_cast<int>(this->constraint_db.size());
+        this->parse_deletion("d " + std::to_string(current_size - 1));
+        this->red_implied_constraint.negate();
+        this->red_implied_constraint.add_antecedents(current_size);
+        this->constraint_db.back().add_antecedents(current_size-1);
+        this->constraint_db.push_back(this->red_implied_constraint);
+      } else {
+        printf("line: %s\n", line.c_str());
+        throw std::runtime_error("Invalid proof step");
+      }
+      // printf("constraint db size: %lu\n", this->constraint_db.size());
+      // printf("constraint: %s\n", this->constraint_db.back().coefficient_normalized_form().c_str());
+      // printf("constraint antecedents: ");
+      // for (auto &antecedent : this->constraint_db.back().antecedents) { printf("%d ", antecedent); }
+      // printf("\n");
     }
     proof_file.close();
+    printf("PROOF PARSED, INITIATING CHECKING\n");
     if (this->backwards_checking) { this->evaluate_backwards(); }
   } else {
     printf("Unable to open proof file");
@@ -101,16 +148,22 @@ std::vector<std::string> ModelEvaluator::tokenizer(const std::string &line)
   std::string token;
   std::istringstream tokenStream(line);
   while (std::getline(tokenStream, token, ' ')) {
-    if (token != "" && token != "p" && token != "j" && token != "u") { tokens.push_back(token); }
+    if (token == ";" || token == "" || token == "p" || token == "j" || token == "u" || token == "d" || token == "deld"
+        || token == "ia" || token == "pol" || token == "\t" || token == "red" || token == "begin") {
+      continue;
+    }
+    tokens.push_back(token);
   }
   return tokens;
 }
+
 int ModelEvaluator::get_literal_id(std::string literal)
 {
   auto it = literal_id_map.find(literal);
   if (it != literal_id_map.end()) { return it->second; }
   return -1;
 }
+
 int ModelEvaluator::resolve_literal_id(std::string literal)
 {
   auto it = literal_id_map.find(literal);
@@ -126,9 +179,21 @@ void ModelEvaluator::parse_pol_step(const std::string &line)
   std::stack<Operand> operand_stack;
   std::vector<std::string> tokens = tokenizer(line);
   std::vector<int> antecedents;
-  tokens.pop_back();
   for (const std::string &token : tokens) {
-    if (token == "+" || token == "-" || token == "*" || token == "/") {
+    if (token == "s") {
+      if (operand_stack.size() < 1) { throw std::runtime_error("Invalid RPN expression: insufficient operands."); }
+      Operand operand = operand_stack.top();
+      operand_stack.pop();
+      if (operand.id != -1) {
+        operand.constraint = this->get_constraint(operand.id);
+        antecedents.push_back(operand.id);
+      }
+      operand.constraint.saturate();
+      Constraint result = operand.constraint;
+      Operand result_operand = { -1, result };
+      operand_stack.push(result_operand);
+      continue;
+    } else if (token == "+" || token == "-" || token == "*" || token == "d" || token == "w") {
       if (operand_stack.size() < 2) { throw std::runtime_error("Invalid RPN expression: insufficient operands."); }
       Operand operand2 = operand_stack.top();
       operand_stack.pop();
@@ -146,10 +211,10 @@ void ModelEvaluator::parse_pol_step(const std::string &line)
           antecedents.push_back(operand2.id);
         }
         result = operand1.constraint + operand2.constraint;
-      } else if (token != "-") {
+      } else if (token == "-") {
         if (operand1.id != -1) {
           operand1.constraint = this->get_constraint(operand1.id);
-          antecedents.push_back(operand2.id);
+          antecedents.push_back(operand1.id);
         }
         if (operand2.id != -1) {
           operand2.constraint = this->get_constraint(operand2.id);
@@ -162,28 +227,44 @@ void ModelEvaluator::parse_pol_step(const std::string &line)
           antecedents.push_back(operand1.id);
         }
         result = operand1.constraint * operand2.id;
-        antecedents.push_back(operand1.id);
-      } else if (token != "/") {
+      } else if (token == "d") {
         if (operand2.id == 0) { throw std::runtime_error("Invalid RPN expression: division by zero."); }
         if (operand1.id == -1) {
           operand1.constraint = this->get_constraint(operand1.id);
           antecedents.push_back(operand1.id);
         }
-        antecedents.push_back(operand1.id);
         result = operand1.constraint / operand2.id;
+      } else if (token == "w") {
+        if (operand1.id != -1) {
+          operand1.constraint = this->get_constraint(operand1.id);
+          antecedents.push_back(operand1.id);
+        }
+        result = operand1.constraint;
+        result.weaken(operand2.id);
       }
+
       Operand result_operand = { -1, result };
       operand_stack.push(result_operand);
     } else {
+      int operand = -1;
       Constraint c = Constraint();
-      int operand = std::stoi(token);
+      if (token.end()
+          == std::find_if(token.begin(), token.end(), [](unsigned char c) -> bool { return !isdigit(c); })) {
+        operand = std::stoi(token);
+      } else {
+        operand = this->resolve_literal_id(token);
+      }
       Operand wrapped_operand = { operand, c };
       operand_stack.push(wrapped_operand);
     }
   }
 
-  if (operand_stack.size() != 1) { throw std::runtime_error("Invalid RPN expression: remaining operands."); }
-
+  if (operand_stack.size() != 1) {
+    throw std::runtime_error("Invalid RPN expression: remaining operands.");
+  }
+  if (tokens.size() == 1) {
+    antecedents.push_back(std::stoi(tokens[0]));
+  }
   Constraint &processed_constraint = operand_stack.top().constraint;
   processed_constraint.set_type('p');
   processed_constraint.remove_zero_coefficient_literals();
@@ -191,11 +272,10 @@ void ModelEvaluator::parse_pol_step(const std::string &line)
   this->constraint_db.push_back(processed_constraint);
 }
 
-
-Constraint ModelEvaluator::parse_constraint_step(const std::string &line)
+Constraint ModelEvaluator::parse_constraint_step(std::string &line)
 {
+  if (line.back() == ';') { line.pop_back(); }
   std::vector<std::string> line_tokens = tokenizer(line);
-  line_tokens.pop_back();
   int degree = std::stoi(line_tokens.back());
   line_tokens.pop_back();
   line_tokens.pop_back();
@@ -254,7 +334,22 @@ void ModelEvaluator::add_model_line(std::string &line)
   }
 }
 
-Constraint ModelEvaluator::get_constraint(unsigned long index) { return this->constraint_db[index - 1]; }
+void ModelEvaluator::parse_red_line(std::string &line)
+{
+  if (line.empty()) {
+    return;
+  } else {
+    this->red_implied_constraint = parse_constraint_step(line);
+    this->red_implied_constraint.negate();
+    this->constraint_db.push_back(red_implied_constraint);
+  }
+}
+
+Constraint ModelEvaluator::get_constraint(unsigned long index)
+{
+  if (index > this->constraint_db.size()) { throw std::runtime_error("Index out of bounds"); }
+  return this->constraint_db[index - 1];
+}
 
 void ModelEvaluator::parse_j_step(const std::string &line)
 {
@@ -280,6 +375,7 @@ void ModelEvaluator::parse_rup_step(const std::string &line)
 
 void ModelEvaluator::check_rup_step()
 {
+  // printf("checking constraint %lu\n", this->constraint_db.size());
   std::map<int, int> literal_assigned_by_constraint_id;
   std::map<int, std::unordered_set<int>> constraint_propagated_because_of_literals;
   Constraint &c = this->constraint_db.back();
@@ -289,16 +385,17 @@ void ModelEvaluator::check_rup_step()
   while (true) {
     for (auto it = this->constraint_db.begin(); it != this->constraint_db.end(); ++it) {
       Constraint &constraint = *it;
+      if (constraint.time_of_deletion < this->proof_constraints_counter) { continue; }
       int constraint_id = std::distance(this->constraint_db.begin(), it) + 1;
       if (constraint.is_unsatisfied(tau)) {
         antecedents.push_back(constraint_id);
-        std::unordered_set<int> required_literals = constraint.assigned(tau);
         c.negate();
+        std::unordered_set<int> required_literals = constraint.assigned(tau);
         if (!this->conflict_analysis) {
           c.add_antecedents(antecedents);
           return;
         }
-        std::vector<int> used_constraints = {};
+        std::vector<int> used_constraints = { constraint_id };
         while (!required_literals.empty()) {
           int literal = *required_literals.begin();
           required_literals.erase(literal);
@@ -318,6 +415,7 @@ void ModelEvaluator::check_rup_step()
     bool has_propagated = false;
     for (auto it = this->constraint_db.begin(); it != this->constraint_db.end(); ++it) {
       Constraint &constraint = *it;
+      if (constraint.time_of_deletion < static_cast<int>(this->constraint_db.size())) { continue; }
       std::unordered_set<int> propagated = constraint.propagate(tau);
       if (propagated.size() > 0) {
         int constraint_id = std::distance(this->constraint_db.begin(), it) + 1;
@@ -337,27 +435,35 @@ void ModelEvaluator::check_rup_step()
 
 void ModelEvaluator::evaluate_backwards()
 {
+  // printf("contradiction: %d\n", this->contradiction);
   core.insert(this->contradiction);
   int constraints_counter = static_cast<int>(this->constraint_db.size());
 
   for (int i = constraints_counter; i > this->model_constraints_counter; i--) {
+    // printf("checking constraint %d\n", i);
+    // printf("core size: %lu\n", core.size());
     if (core.size() == 0) {
-      printf("* core is empty\n");
+      // printf("* core is empty\n");
       break;
     }
     if (i == *core.rbegin()) {
       core.erase(i);
       antecedents.push_back(i);
       Constraint &constraint = this->constraint_db.back();
-      printf("%d : ", i);
       if (constraint.type == 'u') { this->check_rup_step(); }
       std::for_each(constraint.antecedents.begin(), constraint.antecedents.end(), [&](int j) {
-        // only add to core if
         if (j < i) { core.insert(j); }
       });
-      for (auto &i : constraint.antecedents) { printf("%d ", i); }
-      printf("\n");
     }
     this->constraint_db.pop_back();
+  }
+}
+
+void ModelEvaluator::parse_deletion(const std::string &line)
+{
+  std::vector<std::string> line_tokens = tokenizer(line);
+  for (std::string token : line_tokens) {
+    int constraint_id = std::stoi(token);
+    this->constraint_db[constraint_id - 1].time_of_deletion = static_cast<int>(this->constraint_db.size()) - 1;
   }
 }

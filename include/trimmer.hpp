@@ -15,6 +15,7 @@ private:
   std::string tokens_to_line(std::vector<std::string> &tokens);
   int get_new_constraint_number(int old_constraint_number);
   bool is_number(const std::string &s);
+  std::string transform_pol_step(const std::string &line);
 
 public:
   Trimmer(std::string proof, std::string trimmed_proof, std::vector<int> &antecedents);
